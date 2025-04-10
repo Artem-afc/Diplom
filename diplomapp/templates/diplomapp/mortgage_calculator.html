@@ -1,0 +1,14 @@
+<h1>Кредитный калькулятор</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Рассчитать</button>
+</form>
+
+{% if result %}
+    <h2>Результаты расчета:</h2>
+    <p>Процентная ставка: {{ result.interest_rate }}%</p>
+    <p>Ежемесячный платеж: {{ result.monthly_payment }} руб.</p>
+    <p>Общая сумма выплат: {{ result.total_payment }} руб.</p>
+    <p>Переплата: {{ result.overpayment }} руб.</p>
+{% endif %}

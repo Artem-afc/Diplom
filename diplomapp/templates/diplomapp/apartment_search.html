@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Поиск квартир</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-form {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .search-form button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-form button:hover {
+            background: #45a049;
+        }
+        .apartments-list {
+            list-style: none;
+            padding: 0;
+        }
+        .apartments-list li {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .apartments-list li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .apartments-list li a:hover {
+            color: #4CAF50;
+        }
+        .apartment-info {
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .no-results {
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Поиск квартир</h1>
+
+    <div class="search-form">
+        <form method="get">
+            {{ form.as_p }}
+            <button type="submit">Поиск</button>
+        </form>
+    </div>
+
+    <h2>Результаты поиска</h2>
+
+    {% if apartments %}
+    <ul class="apartments-list">
+        {% for apartment in apartments %}
+        <li>
+            <a href="{% url 'apartment_detail' apartment.pk %}">
+                {{ apartment.building.address }}, {{ apartment.bedrooms }} комнат(а)
+            </a>
+            <div class="apartment-info">
+                Площадь: {{ apartment.square_footage }} м² |
+                Цена: {{ apartment.price }} € |
+                Этаж: {{ apartment.floor }} |
+                Отделка: {{ apartment.get_finishing_display }}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="no-results">Квартиры не найдены. Попробуйте изменить параметры поиска.</p>
+    {% endif %}
+</body>
+</html>

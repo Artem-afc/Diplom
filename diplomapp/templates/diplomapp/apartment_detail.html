@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+ <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .sold-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+        .apartment-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .gallery img {
+            max-width: 300px;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .gallery img:hover {
+            transform: scale(1.03);
+        }
+        .calculator {
+            background: #eaf7ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        form {
+            margin: 15px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .buy-btn {
+            background-color: #27ae60;
+        }
+        .buy-btn:hover {
+            background-color: #219653;
+        }
+        .resell-btn {
+            background-color: #f39c12;
+        }
+        .resell-btn:hover {
+            background-color: #e67e22;
+        }
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background: #fdecea;
+            border-radius: 4px;
+        }
+        .result {
+            background: #e8f8f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+<head>
+    <title>Квартира {{ apartment.building.address }}</title>
+</head>
+<body>
+    <h1>{{ apartment.building.address }}, {{ apartment.bedrooms }}к.</h1>
+
+    {% if apartment.is_sold %}
+    <p><strong>Продана</strong> {{ apartment.sold_date }}</p>
+    {% endif %}
+
+    <p><strong>Цена:</strong> {{ apartment.price }} руб.</p>
+    <p><strong>Площадь:</strong> {{ apartment.square_footage }} м²</p>
+    {% if apartment.floor %}<p><strong>Этаж:</strong> {{ apartment.floor }}</p>{% endif %}
+    <p>{{ apartment.description }}</p>
+
+    <h2>Фото</h2>
+    {% if apartment.image %}
+    <img src="{{ apartment.image.url }}" width="300">
+    {% endif %}
+    {% for image in apartment.images.all %}
+    <img src="{{ image.image.url }}" width="300">
+    {% endfor %}
+
+    <h2>Рассчитать кредит</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button>Рассчитать</button>
+    </form>
+
+    {% if result %}
+    <h3>Результаты расчета:</h3>
+            <p><strong>Процентная ставка:</strong> {{ result.interest_rate }}%</p>
+            <p><strong>Ежемесячный платеж:</strong> {{ result.monthly_payment|floatformat:"0" }} руб.</p>
+            <p><strong>Общая сумма выплат:</strong> {{ result.total_payment|floatformat:"0" }} руб.</p>
+            <p><strong>Переплата:</strong> {{ result.overpayment|floatformat:"0" }} руб.</p>
+
+    {% if not apartment.is_sold %}
+    <form method="post" action="{% url 'purchase_confirmation' apartment.pk %}">
+        {% csrf_token %}
+        <button>Купить</button>
+    </form>
+    {% endif %}
+    {% endif %}
+
+</body>
+</html>

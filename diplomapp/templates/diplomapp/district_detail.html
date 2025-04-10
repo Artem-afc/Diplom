@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Район: {{ district.name }} | Недвижимость</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--light-gray);
+        }
+
+        header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .district-description {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .district-image {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .building-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .building-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+        }
+
+        .building-image-container {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .building-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .building-info {
+            padding: 15px;
+        }
+
+        .building-address {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .building-year {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .apartments-count {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            display: inline-block;
+        }
+
+        .no-image {
+            height: 200px;
+            background-color: #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .building-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Район: {{ district.name }}</h1>
+        {% if district.description %}
+        <p class="district-description">{{ district.description }}</p>
+        {% endif %}
+        {% if district.image %}
+        <img src="{{ district.image.url }}" alt="{{ district.name }}" class="district-image">
+        {% endif %}
+    </header>
+
+    <section>
+        <h2>Здания в районе</h2>
+        <div class="building-grid">
+            {% for building in buildings %}
+            <div class="building-card">
+                <a href="{% url 'building_detail' building.pk %}">
+                    <div class="building-image-container">
+                        {% if building.image %}
+                        <img src="{{ building.image.url }}" alt="{{ building.address }}" class="building-image">
+                        {% else %}
+                        <div class="no-image">Фото здания отсутствует</div>
+                        {% endif %}
+                    </div>
+                    <div class="building-info">
+                        <div class="building-address">{{ building.address }}</div>
+                        <div class="building-year">Год постройки: {{ building.year_built }}</div>
+                        <span class="apartments-count">{{ building.apartment_set.count }} квартир</span>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <p>В этом районе пока нет зданий</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <a href="{% url 'district_list' %}" class="back-link">← Вернуться к списку районов</a>
+</body>
+</html>
