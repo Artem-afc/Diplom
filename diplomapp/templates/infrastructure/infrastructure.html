@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инфраструктура района</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .infrastructure-section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            color: #2c3e50;
+            border-left: 4px solid #4CAF50;
+            padding-left: 10px;
+            margin-bottom: 20px;
+        }
+        .infrastructure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .infrastructure-card {
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .card-image {
+            height: 160px;
+            background-color: #f1f1f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-body {
+            padding: 15px;
+        }
+        .card-title {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .card-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        .detail-row i {
+            width: 20px;
+            color: #4CAF50;
+            margin-right: 8px;
+        }
+        .no-image {
+            color: #999;
+            font-size: 3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>Инфраструктура района</h1>
+        <p>Все важные объекты в шаговой доступности</p>
+    </div>
+
+    {% for type, items in items_by_type.items %}
+    <div class="infrastructure-section">
+        <h2 class="section-title">
+            <i class="fas fa-{{ items.0.icon|default:'map-marker-alt' }}"></i> 
+            {{ items.0.get_type_display }}
+        </h2>
+        
+        <div class="infrastructure-grid">
+            {% for item in items %}
+            <div class="infrastructure-card">
+                <div class="card-image">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}">
+                    {% else %}
+                    <div class="no-image">
+                        <i class="fas fa-{{ item.icon|default:'building' }}"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ item.name }}</h3>
+                    <div class="card-details">
+                        <div class="detail-row">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ item.address }}</span>
+                        </div>
+                        {% if item.working_hours %}
+                        <div class="detail-row">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ item.working_hours }}</span>
+                        </div>
+                        {% endif %}
+                        {% if item.phone %}
+                        <div class="detail-row">
+                            <i class="fas fa-phone"></i>
+                            <span>{{ item.phone }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>

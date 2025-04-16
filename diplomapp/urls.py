@@ -17,6 +17,8 @@ urlpatterns = [
     path('apartment/<int:pk>/', views.apartment_detail, name='apartment_detail'),
     path('trade-in/', views.trade_in_view, name='trade_in'),
     path('infrastructure/', views.infrastructure, name='infrastructure'),
+
+
 ]
 
 if settings.DEBUG:

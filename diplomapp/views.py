@@ -1,44 +1,13 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import District, Building, Apartment, InterestRate
-from .forms import SubscriberForm, MortgageCalculatorForm, ApartmentForm, ApartmentSearchForm
+from django.http import JsonResponse
+from .models import District, Building, Apartment, InterestRate, InfrastructureItem
+from .forms import SubscriberForm, MortgageCalculatorForm, ApartmentForm, ApartmentSearchForm, UserCreationFormWithFullName, LoginForm
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import login, authenticate
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from .forms import MortgageCalculatorForm
 from django import forms
-from .models import InfrastructureCategory, InfrastructureItem
-from django.shortcuts import render, get_object_or_404
-from .models import InfrastructureCategory, InfrastructureItem
-
-def apartment_detail(request, pk):
-    apartment = get_object_or_404(Apartment, pk=pk)
-    return render(request, 'diplomapp/apartment_detail.html', {'apartment': apartment})
-
-def district_list(request):
-    districts = District.objects.all()
-    return render(request, 'diplomapp/district_list.html', {'districts': districts})
-
-def district_detail(request, pk):
-    district = get_object_or_404(District, pk=pk)
-    buildings = Building.objects.filter(district=district)
-    return render(request, 'diplomapp/district_detail.html', {'district': district, 'buildings': buildings})
-
-def building_detail(request, pk):
-    building = get_object_or_404(Building, pk=pk)
-    apartments = Apartment.objects.filter(building=building)
-    return render(request, 'diplomapp/building_detail.html', {'building': building, 'apartments': apartments})
-
-class UserCreationFormWithFullName(UserCreationForm):
-    first_name = forms.CharField(label="Имя", max_length=30)
-    last_name = forms.CharField(label="Фамилия", max_length=30)
-
-    class Meta:
-        model = User
-        fields = ("username", "first_name", "last_name")
-
 
 
 def apartment_detail(request, pk):
@@ -57,7 +26,7 @@ def apartment_detail(request, pk):
             return render(request, 'diplomapp/apartment_detail.html', {
                 'apartment': apartment,
                 'form': form,
-                'purchase_success': True,  # Добавляем переменную purchase_success
+                'purchase_success': True,
                 'result': result,
             })
         else:
@@ -70,6 +39,50 @@ def apartment_detail(request, pk):
         'result': result,
         'error_message': error_message
     })
+
+
+def district_list(request):
+    districts = District.objects.all()
+    return render(request, 'diplomapp/district_list.html', {'districts': districts})
+
+
+def district_detail(request, pk):
+    district = get_object_or_404(District, pk=pk)
+    buildings = Building.objects.filter(district=district)
+    return render(request, 'diplomapp/district_detail.html', {'district': district, 'buildings': buildings})
+
+
+def building_detail(request, pk):
+    building = get_object_or_404(Building, pk=pk)
+    apartments = Apartment.objects.filter(building=building)
+    form = ApartmentSearchForm(request.GET)
+    search_params = {}
+
+    if form.is_valid():
+        floor = form.cleaned_data.get('floor')
+        bedrooms = form.cleaned_data.get('bedrooms')
+        price_min = form.cleaned_data.get('price_min')
+        price_max = form.cleaned_data.get('price_max')
+        finishing = form.cleaned_data.get('finishing')
+
+        if floor:
+            apartments = apartments.filter(floor=floor)
+            search_params['floor'] = floor
+        if bedrooms:
+            apartments = apartments.filter(bedrooms=bedrooms)
+            search_params['bedrooms'] = bedrooms
+        if price_min:
+            apartments = apartments.filter(price__gte=price_min)
+            search_params['price_min'] = price_min
+        if price_max:
+            apartments = apartments.filter(price__lte=price_max)
+            search_params['price_max'] = price_max
+        if finishing:
+            apartments = apartments.filter(description__icontains=finishing)
+            search_params['finishing'] = finishing
+
+    return render(request, 'diplomapp/building_detail.html', {'building': building, 'form': form, 'apartments': apartments, 'search_params': search_params})
+
 
 def purchase_confirmation(request, pk):
     apartment = get_object_or_404(Apartment, pk=pk)
@@ -87,13 +100,14 @@ def purchase_confirmation(request, pk):
         form = UserCreationFormWithFullName()
     return render(request, 'diplomapp/purchase_confirmation.html', {'apartment': apartment, 'form': form})
 
+
 def user_login(request):
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
+        form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
+            user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
                 return redirect('district_list')
@@ -102,8 +116,9 @@ def user_login(request):
         else:
             return render(request, 'diplomapp/login.html', {'form': form, 'error_message': 'Неверные логин или пароль'})
     else:
-        form = AuthenticationForm()
+        form = LoginForm()
     return render(request, 'diplomapp/login.html', {'form': form})
+
 
 def mortgage_calculator(request, price):
     result = None
@@ -152,6 +167,7 @@ def mortgage_calculator(request, price):
             error_message = "Произошла ошибка при расчете."
     return result, error_message
 
+
 def subscribe(request):
     if request.method == 'POST':
         form = SubscriberForm(request.POST)
@@ -161,6 +177,7 @@ def subscribe(request):
     else:
         form = SubscriberForm()
     return render(request, 'diplomapp/subscribe.html', {'form': form})
+
 
 def apartment_create(request):
     if request.method == 'POST':
@@ -172,6 +189,7 @@ def apartment_create(request):
         form = ApartmentForm()
     return render(request, 'diplomapp/apartment_form.html', {'form': form})
 
+
 def apartment_update(request, pk):
     apartment = get_object_or_404(Apartment, pk=pk)
     if request.method == 'POST':
@@ -182,6 +200,7 @@ def apartment_update(request, pk):
     else:
         form = ApartmentForm(instance=apartment)
     return render(request, 'diplomapp/apartment_form.html', {'form': form})
+
 
 def apartment_search(request):
     form = ApartmentSearchForm(request.GET)
@@ -211,46 +230,14 @@ def apartment_search(request):
     return render(request, 'diplomapp/apartment_search.html', {'form': form, 'apartments': apartments})
 
 
-def building_detail(request, pk):
-    building = get_object_or_404(Building, pk=pk)
-    form = ApartmentSearchForm(request.GET)
-    apartments = Apartment.objects.filter(building=building)
-    search_params = {}
-
-    if form.is_valid():
-        floor = form.cleaned_data.get('floor')
-        bedrooms = form.cleaned_data.get('bedrooms')
-        price_min = form.cleaned_data.get('price_min')
-        price_max = form.cleaned_data.get('price_max')
-        finishing = form.cleaned_data.get('finishing')
-
-        if floor:
-            apartments = apartments.filter(floor=floor)
-            search_params['floor'] = floor
-        if bedrooms:
-            apartments = apartments.filter(bedrooms=bedrooms)
-            search_params['bedrooms'] = bedrooms
-        if price_min:
-            apartments = apartments.filter(price__gte=price_min)
-            search_params['price_min'] = price_min
-        if price_max:
-            apartments = apartments.filter(price__lte=price_max)
-            search_params['price_max'] = price_max
-        if finishing:
-            apartments = apartments.filter(description__icontains=finishing)
-            search_params['finishing'] = finishing
-
-    return render(request, 'diplomapp/building_detail.html', {'building': building, 'form': form, 'apartments': apartments, 'search_params': search_params})
-
-
 def purchase_confirmation(request, pk):
     apartment = get_object_or_404(Apartment, pk=pk)
     apartment.user = request.user
     apartment.is_sold = True
     apartment.sold_date = timezone.now().date()
     apartment.save()
-
     return render(request, 'diplomapp/purchase_confirmation.html', {'apartment': apartment})
+
 
 def resell_apartment(request, pk):
     apartment = get_object_or_404(Apartment, pk=pk)
@@ -264,9 +251,16 @@ def resell_apartment(request, pk):
 def trade_in_view(request):
     return render(request, 'diplomapp/trade_in.html')
 
+
 def infrastructure(request):
-    categories = InfrastructureCategory.objects.all().order_by('name')
+    items = InfrastructureItem.objects.all()
+    items_by_type = {}
+    for item in items:
+        if item.type not in items_by_type:
+            items_by_type[item.type] = []
+        items_by_type[item.type].append(item)
+
     return render(request, 'infrastructure/infrastructure.html', {
-        'categories': categories,
+        'items_by_type': items_by_type,
         'title': 'Инфраструктура района'
     })

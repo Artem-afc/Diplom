@@ -94,3 +94,11 @@ class ApartmentSearchForm(forms.Form):
             'placeholder': 'Максимальная цена'
         })
     )
+
+
+class UserCreationFormWithFullName:
+    pass
+
+
+class LoginForm:
+    pass
