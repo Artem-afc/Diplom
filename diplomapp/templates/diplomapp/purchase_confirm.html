@@ -1,0 +1,21 @@
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h2>Подтверждение покупки</h2>
+        </div>
+        <div class="card-body">
+            <p>Вы уверены, что хотите купить квартиру №{{ apartment.id }}?</p>
+            <p><strong>Адрес:</strong> {{ apartment.building.address }}</p>
+            <p><strong>Цена:</strong> {{ apartment.price }} ₽</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-lg">Подтвердить покупку</button>
+                <a href="{% url 'apartment_detail' apartment.pk %}" class="btn btn-secondary btn-lg">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

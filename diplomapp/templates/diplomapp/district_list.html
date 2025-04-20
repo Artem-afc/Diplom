@@ -1,144 +1,159 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Список районов | Тут, там и везде обман</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-        }
-        .fixed-block {
-            position: fixed;
-            background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            width: 200px;
-            border: 1px solid #ddd;
-        }
-        .infrastructure-block {
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        .trade-in-block {
-            left: 20px;
-            bottom: 20px;
-        }
-        .login-block {
-            top: 20px;
-            right: 20px;
-        }
-        .subscribe-block {
-            right: 20px;
-            bottom: 20px;
-            width: 250px;
-        }
-        .district-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .district-item {
-            border: 1px solid #ddd;
-            padding: 15px;
-            text-align: center;
-            background: white;
-            border-radius: 8px;
-        }
-        .district-item img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            margin-bottom: 15px;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        .btn-infra {
-            background-color: #2ecc71;
-        }
-        input[type="email"] {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'diplomapp/css/styles.css' %}">
 </head>
 <body>
-    <div class="header">
-        <h1>Тут, там и везде обман</h1>
-        <h3>Добро пожаловать! Мы компания-застройщик. На нашем сайте вы можете ознакомиться с
-            нашими предложениями по покупке квартир в лучших районах вашего города.</h3>
-    </div>
-
-    <div class="fixed-block infrastructure-block">
-    <h3>Инфраструктура</h3>
-    <p>Все объекты рядом с нашими домами</p>
-    <a href="{% url 'infrastructure' %}"><button class="btn-infra">Посмотреть</button></a>
-</div>
-
-    <div class="fixed-block trade-in-block">
-        <h3>Трейд-ин</h3>
-        <p>Меняем вашу старую квартиру на нашу новую!</p>
-        <a href="{% url 'trade_in' %}"><button>Узнать больше</button></a>
-    </div>
-
-    <div class="login-block">
-        <a href="{% url 'user_login' %}"><button>Вход</button></a>
-    </div>
-
-    <div class="fixed-block subscribe-block">
-        <h4>Подписаться на рассылку</h4>
-        <form method="post" action="{% url 'subscribe' %}">
-            {% csrf_token %}
-            <input type="email" name="email" placeholder="Ваш email" required>
-            <button type="submit" style="margin-top: 10px; width: 100%;">Подписаться</button>
-        </form>
-    </div>
-
-    <h2 style="text-align: center;">Наши районы</h2>
-    <div class="district-grid">
-        {% for district in districts %}
-        <div class="district-item">
-            <a href="{% url 'district_detail' district.pk %}" style="text-decoration: none; color: inherit;">
-                <h3>{{ district.name }}</h3>
-                {% if district.image %}
-                <img src="{{ district.image.url }}" alt="{{ district.name }}">
+    <div class="container">
+        <div class="header text-center">
+            <div class="auth-section">
+                {% if request.user.is_authenticated %}
+                    <div class="d-flex justify-content-end align-items-center">
+                        <span class="me-3 text-muted">{{ request.user.get_full_name|default:request.user.username }}</span>
+                        <form action="{% url 'logout' %}" method="post" class="mb-0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Выйти</button>
+                        </form>
+                    </div>
                 {% else %}
-                <div style="height: 200px; background: #eee; display: flex; align-items: center; justify-content: center;">
-                    Фото отсутствует
-                </div>
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+
+                        <div class="mb-3">
+                            <input type="text" name="username" class="form-control form-control-sm" placeholder="Логин" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <input type="password" name="password" class="form-control form-control-sm" placeholder="Пароль" required>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-sm btn-primary">Войти</button>
+                            <a href="{% url 'register' %}" class="btn btn-sm btn-success">Регистрация</a>
+                        </div>
+                    </form>
                 {% endif %}
-                {% if district.description %}
-                <p>{{ district.description|truncatechars:100 }}</p>
-                {% endif %}
-                <button style="margin-top: 10px;">Подробнее</button>
-            </a>
+            </div>
+
+            <h1 class="mb-3">Тут, там и везде обман</h1>
+            <p class="lead">Добро пожаловать! Мы компания-застройщик. На нашем сайте вы можете ознакомиться с нашими предложениями по покупке квартир в лучших районах вашего города.</p>
         </div>
-        {% empty %}
-        <p style="grid-column: 1 / -1; text-align: center;">Районы не найдены</p>
-        {% endfor %}
+
+        <div class="row">
+            <div class="col-lg-9">
+                <h2 class="mb-4 text-center">Наши районы</h2>
+
+                {% if districts %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for district in districts %}
+                        <div class="col">
+                            <div class="card district-card h-100">
+                                {% if district.image %}
+                                    <img src="{{ district.image.url }}" class="card-img-top district-img" alt="{{ district.name }}">
+                                {% else %}
+                                    <div class="district-img bg-light d-flex align-items-center justify-content-center">
+                                        <img src="{% static 'diplomapp/images/default-district.jpg' %}" class="img-fluid" alt="Изображение по умолчанию">
+                                    </div>
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ district.name }}</h5>
+                                    <p class="card-text">{{ district.description|truncatechars:100 }}</p>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a href="{% url 'district_detail' district.pk %}" class="btn btn-primary w-100">Подробнее</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        Районы не найдены
+                    </div>
+                {% endif %}
+
+                {% if request.user.is_authenticated %}
+                    <div class="mt-5">
+                        <h2 class="mb-4 text-center">Ваши купленные квартиры</h2>
+
+                        {% if purchased_apartments %}
+                            <div class="row row-cols-1 row-cols-md-2 g-4">
+                                {% for apartment in purchased_apartments %}
+                                <div class="col">
+                                    <div class="card purchase-card h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ apartment.building.name }}</h5>
+                                            <p class="card-text">
+                                                <strong>Адрес:</strong> {{ apartment.building.address }}<br>
+                                                <strong>Квартира:</strong> {{ apartment.floor }} этаж, {{ apartment.bedrooms }} комн.<br>
+                                                <strong>Площадь:</strong> {{ apartment.square_footage }} м²
+                                            </p>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{% url 'apartment_detail' apartment.pk %}" class="btn btn-outline-primary btn-sm">Подробнее</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center">
+                                У вас пока нет купленных квартир
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="{% url 'district_list' %}" class="btn btn-primary">Посмотреть предложения</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="card mt-5">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Хотите видеть свои покупки?</h5>
+                            <p class="card-text">Войдите в систему или зарегистрируйтесь, чтобы получить доступ к личному кабинету</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Войти</a>
+                                <a href="{% url 'register' %}?next={{ request.path }}" class="btn btn-success">Зарегистрироваться</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Боковая панель -->
+            <div class="col-lg-3">
+                <div class="fixed-blocks">
+                    <div class="fixed-block mb-4">
+                        <h5><i class="bi bi-building"></i> Инфраструктура</h5>
+                        <p class="text-muted">Все объекты рядом с нашими домами</p>
+                        <a href="{% url 'infrastructure' %}" class="btn btn-primary w-100">Посмотреть</a>
+                    </div>
+
+                    <div class="fixed-block mb-4">
+                        <h5><i class="bi bi-arrow-left-right"></i> Трейд-ин</h5>
+                        <p class="text-muted">Меняем вашу старую квартиру на нашу новую!</p>
+                        <a href="{% url 'trade_in' %}" class="btn btn-warning w-100">Узнать больше</a>
+                    </div>
+
+                    <div class="fixed-block">
+                        <h5><i class="bi bi-envelope"></i> Подписаться на рассылку</h5>
+                        <form method="post" action="{% url 'subscribe' %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <input type="email" name="email" class="form-control" placeholder="Ваш email" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Подписаться</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 </body>
 </html>

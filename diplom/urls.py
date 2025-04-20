@@ -26,4 +26,5 @@ urlpatterns = [
     path('apartments/', include('diplomapp.urls')),
     path('', root_redirect, name='root_redirect'),
 
+
 ]

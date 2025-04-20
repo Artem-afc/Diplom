@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<html>
- <style>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квартира {{ apartment.building.address }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -8,9 +14,6 @@
             margin: 0 auto;
             padding: 20px;
             color: #333;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
         }
         .sold-badge {
             background-color: #e74c3c;
@@ -39,99 +42,121 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: transform 0.3s;
         }
-        .gallery img:hover {
-            transform: scale(1.03);
+        .auth-required {
+            background-color: #fff8e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
         }
-        .calculator {
+        .price-highlight {
+            font-size: 24px;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .calculator-section {
             background: #eaf7ff;
             padding: 20px;
             border-radius: 8px;
             margin: 20px 0;
         }
-        form {
-            margin: 15px 0;
-        }
-        button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #2980b9;
-        }
-        .buy-btn {
-            background-color: #27ae60;
-        }
-        .buy-btn:hover {
-            background-color: #219653;
-        }
-        .resell-btn {
-            background-color: #f39c12;
-        }
-        .resell-btn:hover {
-            background-color: #e67e22;
-        }
-        .error {
-            color: #e74c3c;
-            padding: 10px;
-            background: #fdecea;
-            border-radius: 4px;
-        }
-        .result {
+        .calculation-result {
             background: #e8f8f5;
             padding: 15px;
             border-radius: 8px;
             margin: 15px 0;
         }
     </style>
-<head>
-    <title>Квартира {{ apartment.building.address }}</title>
 </head>
 <body>
     <h1>{{ apartment.building.address }}, {{ apartment.bedrooms }}к.</h1>
 
     {% if apartment.is_sold %}
-    <p><strong>Продана</strong> {{ apartment.sold_date }}</p>
+    <div class="sold-badge">Продана {{ apartment.sold_date|date:"d.m.Y" }}</div>
     {% endif %}
 
-    <p><strong>Цена:</strong> {{ apartment.price }} руб.</p>
-    <p><strong>Площадь:</strong> {{ apartment.square_footage }} м²</p>
-    {% if apartment.floor %}<p><strong>Этаж:</strong> {{ apartment.floor }}</p>{% endif %}
-    <p>{{ apartment.description }}</p>
+    <div class="apartment-info">
+        <p><strong>Цена:</strong> <span class="price-highlight">{{ apartment.price|floatformat:"0" }} руб.</span></p>
+        <p><strong>Площадь:</strong> {{ apartment.square_footage }} м²</p>
+        {% if apartment.floor %}<p><strong>Этаж:</strong> {{ apartment.floor }}</p>{% endif %}
 
-    <h2>Фото</h2>
-    {% if apartment.image %}
-    <img src="{{ apartment.image.url }}" width="300">
-    {% endif %}
-    {% for image in apartment.images.all %}
-    <img src="{{ image.image.url }}" width="300">
-    {% endfor %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin: 20px 0;">
+            <p><strong>Комнат:</strong> {{ apartment.bedrooms }}</p>
+            <p><strong>Год постройки:</strong> {{ apartment.building.year_built }}</p>
+        </div>
 
-    <h2>Рассчитать кредит</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button>Рассчитать</button>
-    </form>
+        <h3>Описание</h3>
+        <p>{{ apartment.description }}</p>
+    </div>
 
-    {% if result %}
-    <h3>Результаты расчета:</h3>
+    <h2>Фотографии</h2>
+    <div class="gallery">
+        {% if apartment.image %}
+        <img src="{{ apartment.image.url }}" alt="Фото квартиры">
+        {% endif %}
+        {% for image in apartment.images.all %}
+        <img src="{{ image.image.url }}" alt="Дополнительное фото">
+        {% endfor %}
+    </div>
+
+    <div class="calculator-section">
+        <h2>Рассчитать кредит</h2>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="calculate" value="1">
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-calculator"></i> Рассчитать
+            </button>
+        </form>
+
+        {% if result %}
+        <div class="calculation-result">
+            <h3>Результаты расчета:</h3>
             <p><strong>Процентная ставка:</strong> {{ result.interest_rate }}%</p>
             <p><strong>Ежемесячный платеж:</strong> {{ result.monthly_payment|floatformat:"0" }} руб.</p>
             <p><strong>Общая сумма выплат:</strong> {{ result.total_payment|floatformat:"0" }} руб.</p>
             <p><strong>Переплата:</strong> {{ result.overpayment|floatformat:"0" }} руб.</p>
+        </div>
+        {% endif %}
+    </div>
 
     {% if not apartment.is_sold %}
-    <form method="post" action="{% url 'purchase_confirmation' apartment.pk %}">
-        {% csrf_token %}
-        <button>Купить</button>
-    </form>
+        {% if user.is_authenticated %}
+            <div class="d-grid gap-2">
+                <a href="{% url 'purchase_confirmation' apartment.pk %}"
+                   class="btn btn-success btn-lg">
+                    <i class="bi bi-cart-check"></i> Купить квартиру
+                </a>
+            </div>
+        {% else %}
+            <div class="auth-required">
+                <h4><i class="bi bi-exclamation-triangle"></i> Для покупки необходимо авторизоваться</h4>
+                <div class="d-flex gap-2 mt-3">
+                    <a href="{% url 'login' %}?next={% url 'purchase_confirmation' apartment.pk %}"
+                       class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Войти
+                    </a>
+                    <a href="{% url 'register' %}?next={% url 'purchase_confirmation' apartment.pk %}"
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus"></i> Зарегистрироваться
+                    </a>
+                </div>
+            </div>
+        {% endif %}
     {% endif %}
+
+    {% if user.is_authenticated and user_purchases %}
+    <div class="mt-4">
+        <h2><i class="bi bi-house-check"></i> Ваши покупки</h2>
+        <div class="list-group">
+            {% for purchase in user_purchases %}
+            <a href="{% url 'apartment_detail' purchase.apartment.pk %}" class="list-group-item list-group-item-action">
+                {{ purchase.apartment.building.address }}, {{ purchase.apartment.bedrooms }}к. -
+                куплена {{ purchase.purchase_date|date:"d.m.Y" }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
 
 </body>

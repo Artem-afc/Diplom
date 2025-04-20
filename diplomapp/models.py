@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.core.mail import send_mail
+from django.conf import settings
 
 class District(models.Model):
     name = models.CharField(max_length=100)
@@ -90,11 +91,21 @@ class InterestRate(models.Model):
 
 class Subscriber(models.Model):
     email = models.EmailField(unique=True)
+    name = models.CharField(max_length=100, default="Подписчик")  # Значение по умолчанию
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def send_welcome_email(self):
+        subject = 'Добро пожаловать в нашу рассылку'
+        message = f'Привет, {self.name}! Спасибо за подписку.'
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [self.email],
+            fail_silently=False,
+        )
     def __str__(self):
-        return self.email
-
+        return f"{self.name} ({self.email})"
 
 class InfrastructureItem(models.Model):
     INFRASTRUCTURE_TYPES = [

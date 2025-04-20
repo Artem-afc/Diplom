@@ -1,0 +1,25 @@
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h2>Покупка успешно завершена!</h2>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-success">
+                <h4>Поздравляем с покупкой квартиры!</h4>
+                <p>Номер квартиры: {{ apartment.id }}</p>
+                <p>Адрес: {{ apartment.building.address }}</p>
+                <p>Дата покупки: {{ apartment.sold_date|date:"d.m.Y" }}</p>
+
+            </div>
+
+            <a href="{% url 'apartment_detail' apartment.pk %}" class="btn btn-primary">
+                Вернуться к описанию квартиры
+            </a>
+            <a href="{% url 'district_list' %}" class="btn btn-outline-primary">
+                К списку районов
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

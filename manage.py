@@ -2,7 +2,9 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
+import sys
+print("sys.path при запуске manage.py:")
+print(sys.path)
 
 def main():
     """Run administrative tasks."""

@@ -86,10 +86,10 @@
     {% for type, items in items_by_type.items %}
     <div class="infrastructure-section">
         <h2 class="section-title">
-            <i class="fas fa-{{ items.0.icon|default:'map-marker-alt' }}"></i> 
+            <i class="fas fa-{{ items.0.icon|default:'map-marker-alt' }}"></i>
             {{ items.0.get_type_display }}
         </h2>
-        
+
         <div class="infrastructure-grid">
             {% for item in items %}
             <div class="infrastructure-card">
@@ -128,5 +128,6 @@
         </div>
     </div>
     {% endfor %}
+ <a href="{% url 'district_list' %}" class="back-link">← Вернуться к списку районов</a>
 </body>
 </html>
