@@ -1,26 +1,35 @@
-# Используем официальный образ Python в качестве базового
-FROM python:3.11-slim-buster
+# Используем официальный образ Python
+FROM python:3.11-slim-bookworm
 
-# Устанавливаем рабочую директорию внутри контейнера
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем файл зависимостей
+# Устанавливаем системные зависимости для PostgreSQL
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем только requirements.txt сначала для лучшего кэширования
 COPY requirements.txt .
 
-# Устанавливаем зависимости
-RUN pip install -r requirements.txt
+# Устанавливаем Python зависимости
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем весь код проекта в контейнер
-COPY  . /app
+# Копируем остальные файлы проекта
+COPY . .
 
-# Устанавливаем переменные окружения (по необходимости)
-ENV DJANGO_SETTINGS_MODULE=diplom.settings
-
-# Собираем статические файлы Django
+# Собираем статические файлы
 RUN python manage.py collectstatic --noinput
 
-# Открываем порт, на котором будет работать Django (обычно 8000)
+# Настройки окружения
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DJANGO_SETTINGS_MODULE=diplom.settings
+
+# Открываем порт
 EXPOSE 8000
 
-# Команда для запуска Django-сервера
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Команда запуска (будет переопределена в docker-compose для миграций)
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8002"]
