@@ -4,6 +4,7 @@ Django settings for diplom project.
 
 from pathlib import Path
 import os
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -81,6 +82,13 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:'
+    }
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -108,7 +116,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/app/staticfiles'  # Соответствует volume в docker-compose
+STATIC_ROOT = '/app/staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = '/app/media'
@@ -120,3 +128,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'aptem1582@gmail.com'
 EMAIL_HOST_PASSWORD = 'sglm xhsa lzqg juzc'
 DEFAULT_FROM_EMAIL = 'aptem1582@gmail.com'
+
+LOGIN_REDIRECT_URL = 'district_list'
+LOGIN_URL = 'login'

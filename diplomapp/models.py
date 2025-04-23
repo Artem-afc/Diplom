@@ -13,6 +13,7 @@ class District(models.Model):
 
 
 class Building(models.Model):
+    name = models.CharField(max_length=100)
     address = models.CharField(max_length=200)
     district = models.ForeignKey(District, on_delete=models.CASCADE)
     year_built = models.IntegerField()
